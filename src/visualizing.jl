@@ -1,11 +1,15 @@
 
+localcolormap    =  colorschemes[:Set1_9][[2, 5, 4, 9, 1, 8, 3, 6, 7]]
+markers = [:circle, :star4, :diamond, :rtriangle, :rect, :pentagon, :cross, :star5]
+using ColorSchemes:grayC
+
 """
     plot_sphere_with_nodes(;nodes = nothing, resultDir = "results", filename = "sphere")
 
     画出点在球面上的分布
 TBW
 """
-function plot_sphere_with_nodes(;nodes = nothing, resultDir = "results", filename = "sphere")
+function plot_sphere_with_nodes(;nodes = nothing, colorid = 1, resultDir = "results", filename = "sphere")
     GLMakie.activate!()
     # 单位球面
     sphere = Sphere(Point3f(0), 0.999)
@@ -23,9 +27,65 @@ function plot_sphere_with_nodes(;nodes = nothing, resultDir = "results", filenam
     # 球面
     mesh!(ax, sphere, color = :gold)
     # 散点
-    !isnothing(nodes) && scatter!(ax, eachrow(nodes)...; color = :blue, markersize = 1/25.4*dpi)
+    !isnothing(nodes) && scatter!(ax, eachrow(nodes)...; color = localcolormap[colorid], markersize = 1/25.4*dpi)
     # 隐藏轴、坐标、网格等
     hidedecorations!(ax; grid = true)
+
+    # 保存后返回
+    save(joinpath(resultDir, filename*".png"), fig)
+    return fig
+
+end
+
+
+"""
+    plot_sphere_with_nodes(;nodes = nothing, resultDir = "results", filename = "sphere")
+
+    画出点在球面上的分布
+TBW
+"""
+function plot_sphere_with_nodes(nodes::Vararg{AbstractMatrix, N}; colorid = 1, marker = markers,  resultDir = "results", filename = "sphere") where N
+    GLMakie.activate!()
+    # 单位球面
+    sphere = Sphere(Point3f(0), 0.999)
+
+    # 作图参数
+    size_in_inches = (4, 3)
+    dpi = 600
+    size_in_pixels = size_in_inches .* dpi
+
+    # 画板
+    fig = Figure(resolution = size_in_pixels, fontsize = 3.2/25.4*dpi, theme = theme_light())
+    # 轴图
+    ax  = Axis3(fig[1, 1], aspect = :data, )
+
+    # 球面
+    mesh!(ax, sphere, color = :gold)
+    # 散点
+    for i in 1:N
+        scatter!(ax, eachrow(nodes[i])...; color = localcolormap[colorid[i]], marker = marker[i], markersize = 2/25.4*dpi)
+    end
+    # 隐藏轴、坐标、网格等
+    hidedecorations!(ax)
+
+    # 保存后返回
+    save(joinpath(resultDir, filename*".png"), fig)
+    return fig
+
+end
+
+
+"""
+    plot_sphere_with_nodes(;nodes = nothing, resultDir = "results", filename = "sphere")
+
+    画出点在球面上的分布
+TBW
+"""
+function plot_sphere_with_nodes!(fig; axloc = [1, 1], nodes = nothing, colorid = 2, marker = :star4, 
+    dpi = 600, resultDir = "results", filename = "sphere")
+
+    # 散点
+    !isnothing(nodes) && scatter!(fig[axloc...], eachrow(nodes)...; color = localcolormap[colorid], marker = marker, markersize = 1/25.4*dpi)
 
     # 保存后返回
     save(joinpath(resultDir, filename*".png"), fig)
@@ -69,6 +129,7 @@ end
 function clip_imag(targetdir, filenames, window, savedir)
 
     for filename in filenames
+        @info filename
         img = load(joinpath(targetdir, filename))
         img_new = img[window...]
         save(joinpath(savedir, filename), img_new)
@@ -76,4 +137,25 @@ function clip_imag(targetdir, filenames, window, savedir)
 
     nothing
 
+end
+
+
+function plotSparseArrayPattern(spa; size_inches = (4, 3), resultDir = "results", filename = "saprsepattern", title = "title")
+    CairoMakie.activate!( type = "pdf")
+
+    # 作图参数
+    size_pt     =   72 .* size_inches
+
+    # 画板
+    fig =   Figure(resolution = size_pt)
+    # 轴
+    ax  =    CairoMakie.Axis(fig[1, 1])#, title = title
+    heatmap!(ax, spa; colormap = :grayC)
+    # 隐藏轴、坐标、网格等
+    hidedecorations!(ax)
+    # 保存后返回
+    save(joinpath(resultDir, filename*".pdf"), fig)
+    save(joinpath(resultDir, filename*".png"), fig)
+
+    fig
 end

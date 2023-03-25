@@ -179,21 +179,32 @@ function __init__(;targetdir   =   TargetDir)
     end
 end
 
+"""
+多项式阶数 p 到对应采样点文件、p到点数、点数到p的字典
+"""
 function lbnSorted2fnDictConstruct(filedirs::String = TargetDir)
     # 读取所有文件名
     sphlebeFileNames     =   readdir(filedirs)
     # 初始化 t 值 → 文件名的字典
     t2fnDict    =   Dict{Int, String}()
+    # p → n 字典
+    p2nDict     =   Dict{Int, Int}()
+    # n → p 字典
+    n2pDict     =   Dict{Int, Int}()
     # 循环写入字典
     for filename in sphlebeFileNames
-        p    =   parse(Int, split(filename, ".")[1])
-        t2fnDict[p] =   filename 
+        contents = split(filename, ".")
+        p    =   parse(Int, contents[1])
+        n    =   parse(Int, contents[2])
+        t2fnDict[p] =   filename
+        p2nDict[p] = n
+        n2pDict[n] = p
     end
 
-    return t2fnDict
+    return t2fnDict, p2nDict, n2pDict
 end
 
-const lbnSortedP2FILEDict    =   lbnSorted2fnDictConstruct()
+const lbnSortedP2FILEDict, p2nDict, n2pDict   =   lbnSorted2fnDictConstruct()
 
 
 """
