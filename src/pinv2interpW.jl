@@ -59,7 +59,7 @@ function saveInterpW2file(τt, τp, ε, w; dpath = "deps/InterpolationWeights/")
 
     if fileε > ε
         @info "旧的精度: $fileε, 新的精度: ε"
-        jldopen(joinpath(dpath, "$(τt)To$(τp).jld2"), "w+") do file
+        jldopen(joinpath(dpath, "$(2τt+1)To$(2τp+1).jld2"), "w+") do file
             @info "得到更精确结果！保存中…"
             write(file, "data", w)
             write(file, "ε", ε)
