@@ -210,28 +210,53 @@ const lbnSortedP2FILEDict, p2nDict, n2pDict   =   lbnSorted2fnDictConstruct()
 """
 返回排序后的点、权重数据
 """
-function getlbSortedData(p::Int)
+function getlbSortedData(p::Int; FT = Precision.FT)
 
     # 找到存在的 p 值和文件名
     filename = modiTgetFileName(p, lbnSortedP2FILEDict)
     # 点数
     nNodes  =   parse(Int, split(filename, ".")[2])
     # 预分配内存
-    nodes   =   zeros(Float64, 3, nNodes)
+    nodes   =   zeros(FT, 3, nNodes)
     # 权重
-    weights =   zeros(Float64, nNodes)  
+    weights =   zeros(FT, nNodes)  
     # 读取数据
     open(TargetDir*filename, "r") do file
         for ii in 1:nNodes
             contents = split(readline(file), " ")
             for ixyz in 1:3
-                nodes[ixyz, ii] = parse(Float64, contents[ixyz])
+                nodes[ixyz, ii] = parse(FT, contents[ixyz])
             end
-            weights[ii] = parse(Float64, contents[4])
+            weights[ii] = parse(FT, contents[4])
         end
     end
 
     return nodes, weights
+
+end
+
+using MoM_Kernels:octreeXWNCal
+
+function get_t_nodes(t; FT = Precision.FT)
+
+    p = 2t+1
+
+    nodes = if p <= maximum(keys(p2nDict))
+        getlbSortedData(p; FT = FT)[1]
+    else
+        # θ方向
+        Xcosθs, Wθs   =   octreeXWNCal(one(FT), -one(FT), t, :glq)
+        # 将θ方向高斯-勒让德求积坐标从 [1.,-1.] 转换到 [0,π]
+        Xθs      =   acos.(Xcosθs)
+        # ϕ方向
+        Xϕs, Wϕs = octreeXWNCal(zero(FT), convert(FT, 2π), t, :uni)
+        
+        # 将数据保存在 levelsPoles 中，按照 θ 方向连续的顺序，将所有采样点信息保存为一向量
+        # 计算所有极子的信息
+        reduce(hcat, [r̂θϕInfo{FT}(θ, ϕ).r̂ for ϕ in Xϕs for θ in Xθs])
+    end
+
+    return nodes
 
 end
 
