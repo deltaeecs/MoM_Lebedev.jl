@@ -45,21 +45,23 @@ end
 
 acc(w, x, y) = mean(abs, ( w*x .- y), dims = 1) ./ maximum(abs, y, dims = 1)
 
-function saveInterpW2file(τt, τp, ε, w; dpath = "deps/InterpolationWeights/")
+function saveInterpW2file(τt, τp, ε, w, xx2Dte, yy2Dte; dpath = "deps/InterpolationWeights/")
 
     !isdir(dpath) && mkpath(dpath)
 
     fileε   = try
-        jldopen(joinpath(dpath, "$(τt)To$(τp).jld2"), "r") do file
-            file["ε"]
+        wfile = jldopen(joinpath(dpath, "$(2τt+1)to$(2τp+1).jld2"), "r") do file
+            file["data"]
         end
+        @info "elements" wfile = length(wfile.nzval) w = length(w.nzval)
+        mean(acc(wfile, xx2Dte, yy2Dte)) 
     catch
         1.
     end
-
+    
+    @info "旧的精度: $fileε, 新的精度: $ε"
     if fileε > ε
-        @info "旧的精度: $fileε, 新的精度: ε"
-        jldopen(joinpath(dpath, "$(2τt+1)To$(2τp+1).jld2"), "w+") do file
+        jldopen(joinpath(dpath, "$(2τt+1)to$(2τp+1).jld2"), "w+") do file
             @info "得到更精确结果！保存中…"
             write(file, "data", w)
             write(file, "ε", ε)
@@ -73,20 +75,12 @@ function saveInterpW2file(τt, τp, ε, w; dpath = "deps/InterpolationWeights/")
     
 end
 
-function calWFinal(cubeL; nInterp, xx2D, yy2D, xx2Dte, yy2Dte, FT = Precision.FT)
-    rel_l::FT = cubeL/Params.λ_0
-    calWFinal(;rel_l = rel_l, nInterp = nInterp, xx2D = xx2D, yy2D = yy2D, xx2Dte=xx2Dte, yy2Dte=yy2Dte, FT = FT)
-end
-
 """
 采用伪逆计算插值矩阵，对稀疏矩阵要分行计算
 f(k̂ₗ₋₁) = Wₗ₋₁ₗ f(k̂ₗ)
 Wₗ₋₁ₗ = pinv(f(k̂ₗ)) f(k̂ₗ₋₁) 
 """
-function calWFinal(;rel_l, nInterp, xx2D, yy2D, xx2Dte, yy2Dte, FT = Precision.FT)
-    # truncL
-    τt  =   truncationLCal(rel_l = rel_l)
-    τp  =   truncationLCal(rel_l = 2rel_l)
+function calWFinal(τt, τp;nInterp, xx2D, yy2D, xx2Dte, yy2Dte, FT = Precision.FT)
     # poles
     tnodes = get_t_nodes(τt)
     pnodes = get_t_nodes(τp)
@@ -98,34 +92,36 @@ function calWFinal(;rel_l, nInterp, xx2D, yy2D, xx2Dte, yy2Dte, FT = Precision.F
     pinv2W!(w, nInterp, xx2D, yy2D)
 
     # 计算误差
-    ε = acc(w, xx2Dte, yy2Dte)
+    ε = mean(acc(w, xx2Dte, yy2Dte))
 
-    @info "测试误差" nInterp = nInterp, ε = ε
+    @info "$(2τt+1) → $(2τp+1)"
+    @info "测试误差" nInterp = nInterp ε = ε
 
-    saveInterpW2file(τt, τp, ε, w)
+    saveInterpW2file(τt, τp, ε, w, xx2Dte, yy2Dte)
 
     return nothing
 end
 
-function runpinvCal(cubeL; FT = Precision.FT)
-    rel_l::FT = cubeL/Params.λ_0
-    runpinvCal(; rel_l = rel_l, FT = FT)
-end
 
-function runpinvCal(; rel_l, nInterp = 9, FT = Precision.FT)
+function runpinvCal(pk::T, pt::T; nInterp = 8, FT = Precision.FT) where {T<:Integer}
 
+    @info 
+    rel_l = find_zero(x -> truncation_kernel(x) - (pk+1)÷2, 0)
     # 生成数据集
-    tArray, pArray = generate_dataset_on_cubeEdgeL(rel_l = rel_l)
+    tArray, pArray = generate_dataset_on_pkpt(pk, pt, rel_l)
 
     # 划分数据集
     flag = trunc(Int, 0.8*size(tArray, 2))
-    @views xx2D = tArray[:, 1:flag]
-    @views yy2D = pArray[:, 1:flag]
+    @views xx2D = vcat(real(tArray[:, 1:flag]), imag(tArray[:, 1:flag]))
+    @views yy2D = vcat(real(pArray[:, 1:flag]), imag(pArray[:, 1:flag]))
     @views xx2Dte = tArray[:, (flag+1):end]
     @views yy2Dte = pArray[:, (flag+1):end]
 
+    # trunc
+    τt  =   (pk - 1) ÷ 2
+    τp  =   (pt - 1) ÷ 2
     # 权重 计算
-    calWFinal(;rel_l = rel_l, nInterp = nInterp, xx2D = xx2D, yy2D = yy2D, xx2Dte=xx2Dte, yy2Dte=yy2Dte, FT = FT)
+    calWFinal(τt, τp; nInterp = nInterp, xx2D = xx2D, yy2D = yy2D, xx2Dte=xx2Dte, yy2Dte=yy2Dte, FT = FT)
 
     nothing
 

@@ -1,5 +1,5 @@
 using MoM_Basics:r̂θϕInfo
-using MoM_Kernels:PolesInfo, GLPolesInfo, InterpInfo, truncationLCal, levelIntegralInfoCal
+using MoM_Kernels:PolesInfo, GLPolesInfo, InterpInfo, truncationLCal, truncation_kernel, levelIntegralInfoCal
 
 """
 多极子的极信息，即角谱空间采样信息，基于 Lebedev 采样点
@@ -62,9 +62,11 @@ end
 """
 带参数的构造函数
 """
-function LbTrainedInterp1tepInfo(pk::Int, pt::Int, FT = Precision.FT)
+function LbTrainedInterp1tepInfo(pk::Int, pt::Int; FT = Precision.FT, depath = "deps/InterpolationWeights/")
 
-    w   =   load("deps/InterpolationWeights/$(pk)to$(pt).jld2", "data")
+    fn = joinpath(depath, "$(pk)to$(pt).jld2")
+    !ispath(fn) && runpinvCal(pk, pt; FT = Precision.FT)
+    w   =   load(fn, "data")
     θϕCSC   =   convert(SparseMatrixCSC{FT, Int}, w)
     θϕCSCT  =   sparse(transpose(θϕCSC))
 

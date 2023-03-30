@@ -11,6 +11,7 @@ using Images, FileIO, ProgressMeter
 using MoM_Basics, MoM_Kernels
 using LinearAlgebra
 using .Threads
+using Roots
 
 export  getlbSortedData,
         plot_sphere_with_nodes,
@@ -22,7 +23,7 @@ export  getlbSortedData,
         common_faces,
         get_t_nodes,
         generate_dataset_on_poles,
-        generate_dataset_on_cubeEdgeL,
+        generate_dataset_on_pkpt,
         runpinvCal
 
 # Lebedev数据集
