@@ -260,36 +260,4 @@ function get_t_nodes(t; FT = Precision.FT)
 
 end
 
-
-# """
-# 简单地可视化三维散点
-# """
-# function visualizeScatterOnSphere(nodes::Matrix{FT}; filename = "nodes", reDir = "results/") where {FT<:Real}
-    
-
-#     fig = Plots.scatter(nodes[1,:], nodes[2,:], nodes[3,:], label = nothing, 
-#                     markersize=1, color = :blue, colorbar = false, show = true)
-#     nϕ  =   721
-#     nθ  =   361
-#     u = range(0, 2π, length = nϕ)
-#     v = range(0,  π, length = nθ)
-#     x = 0.999 .* (cos.(u) * sin.(v)')
-#     y = 0.999 .* (sin.(u) * sin.(v)')
-#     z = 0.999 .* repeat(cos.(v)',outer=[nϕ, 1])
-
-#     fig = Plots.surface!(fig, x, y, z, color = :gold, dpi = 600)
-
-#     Plots.plot!(fig, xlabel = "x", ylabel = "y", zlabel = "z",  dpi = 600)
-
-#     !ispath(reDir) && mkpath(reDir)
-#     for fmt in ["pdf", "svg"]# , "html"
-#         Plots.savefig(fig, joinpath(reDir*  filename  * ".$fmt"))
-#     end
-
-#     return fig
-# end
-
 !ispath(TargetDir) && __init__()
-
-
-# end # module

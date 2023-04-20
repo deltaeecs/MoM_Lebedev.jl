@@ -1,25 +1,15 @@
-module Lebedev_Interpolations
+module MoM_Lebedev
 
 using NearestNeighbors, JLD2
 using SparseArrays, Statistics
-# using Plots, ElectronDisplay
-using GLMakie, CairoMakie
-using Colors, ColorSchemes
-using LaTeXStrings
-using ElectronDisplay
-using Images, FileIO, ProgressMeter
+using ProgressMeter
 using MoM_Basics, MoM_Kernels
-using LinearAlgebra
+using LinearAlgebra, Distributions
 using .Threads
 using Roots
 
 export  getlbSortedData,
-        plot_sphere_with_nodes,
-        plot_sphere_with_nodes!,
-        viz_data_in_thetaphi_plane,
-        clip_imag,
         interpWeightsInitial,
-        plotSparseArrayPattern,
         common_faces,
         get_t_nodes,
         generate_dataset_on_poles,
@@ -37,10 +27,7 @@ include("dataset_generator.jl")
 # 插值权重训练函数
 include("pinv2interpW.jl")
 
-# GLMakie 绘图
-include("visualizing.jl")
-
 # 工具函数
 include("utlis.jl")
 
-end # module Lebedev_Interpolations
+end # module MoM_Lebedev

@@ -64,8 +64,8 @@ end
 """
 function LbTrainedInterp1tepInfo(pk::Int, pt::Int; FT = Precision.FT, depath = "deps/InterpolationWeights/")
 
-    fn = joinpath(depath, "$(pk)to$(pt).jld2")
-    !ispath(fn) && runpinvCal(pk, pt; FT = Precision.FT)
+    fn = joinpath(depath, "$(pk)to$(pt).jld2")#!ispath(fn) && 
+    runpinvCal(pk, pt; FT = Precision.FT)
     w   =   load(fn, "data")
     θϕCSC   =   convert(SparseMatrixCSC{FT, Int}, w)
     θϕCSCT  =   sparse(transpose(θϕCSC))
@@ -75,7 +75,7 @@ function LbTrainedInterp1tepInfo(pk::Int, pt::Int; FT = Precision.FT, depath = "
 end
 
 """
-球 t 设计一步插值
+Lebedev一步插值
 """
 function MoM_Kernels.interpolate(weights::LbTrainedInterp1tepInfo{IT, FT}, data::AbstractArray) where {IT, FT}
     target  =   zeros(eltype(data), size(weights.θϕCSC, 1))
@@ -84,7 +84,7 @@ function MoM_Kernels.interpolate(weights::LbTrainedInterp1tepInfo{IT, FT}, data:
 end
 
 """
-球 t 设计一步反插值
+Lebedev一步反插值
 """
 function MoM_Kernels.anterpolate(weights::LbTrainedInterp1tepInfo{IT, FT}, data::AbstractArray) where {IT, FT}
     target  =   zeros(eltype(data), size(weights.θϕCSCT, 1))
@@ -93,7 +93,7 @@ function MoM_Kernels.anterpolate(weights::LbTrainedInterp1tepInfo{IT, FT}, data:
 end
 
 """
-球 t 设计一步插值
+Lebedev一步插值
 """
 function MoM_Kernels.interpolate!(target::AbstractArray, weights::LbTrainedInterp1tepInfo{IT, FT}, data::AbstractArray) where {IT, FT}
     mul!(reshape(target, :), weights.θϕCSC, reshape(data, :))
@@ -101,7 +101,7 @@ function MoM_Kernels.interpolate!(target::AbstractArray, weights::LbTrainedInter
 end
 
 """
-球 t 设计一步反插值
+Lebedev一步反插值
 """
 function MoM_Kernels.anterpolate!(target::AbstractArray, weights::LbTrainedInterp1tepInfo{IT, FT}, data::AbstractArray) where {IT, FT}
     mul!(reshape(target, :), weights.θϕCSCT, reshape(data, :))

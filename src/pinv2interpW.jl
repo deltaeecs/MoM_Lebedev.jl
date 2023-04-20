@@ -103,10 +103,10 @@ function calWFinal(τt, τp;nInterp, xx2D, yy2D, xx2Dte, yy2Dte, FT = Precision.
 end
 
 
-function runpinvCal(pk::T, pt::T; nInterp = 8, FT = Precision.FT) where {T<:Integer}
+function runpinvCal(pk::T, pt::T; nInterp = pk < 20 ? 9 : 8, FT = Precision.FT) where {T<:Integer}
 
-    @info 
-    rel_l = find_zero(x -> truncation_kernel(x) - (pk+1)÷2, 0)
+    @info "Calculating interp weights $pk → $pt …"
+    rel_l = find_zero(x -> truncation_kernel(x) - (pk+1)/2, 0)
     # 生成数据集
     tArray, pArray = generate_dataset_on_pkpt(pk, pt, rel_l)
 
