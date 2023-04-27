@@ -1,7 +1,9 @@
 # MoM_Lebedev
 
-#### 介绍
-提供Lebedev求积加持的MLFMA。使用本包请引用[**MLFMA_Lebedev**](https://ieeexplore.ieee.org/document/9732667)
+#### Introduction
+
+Provide Levbedev quadrature based interpolation for [MLFMA](https://github.com/deltaeecs/MoM_MLFMAs.git). Please cite [**MLFMA_Lebedev**](https://ieeexplore.ieee.org/document/9732667) if using this package.
+
 ```cite
 @ARTICLE{9732667,
   author={He, Xiao-Yang and Kong, De-Hua and Zhang, Wen-Wei and Xia, Ming-Yao},
@@ -14,5 +16,6 @@
   doi={10.1109/LAWP.2022.3158397}}
 ```
 
-#### 软件架构
-本包依赖于 [**MoM_Kernels**](https://gitee.com/deltaeecs/mom_kernels)
+#### Dependency
+
+This package requires [**MoM_Kernels**](https://github.com/deltaeecs/MoM_Kernels.git).
